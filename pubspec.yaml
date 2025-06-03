@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.29.0
   find_the_word: ^1.0.5
+  provider: ^6.1.5
 
 dev_dependencies:
   flutter_test:
