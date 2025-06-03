@@ -30,20 +30,9 @@ class _LetterGridState extends State<LetterGrid> {
   void _onPanUpdate(DragUpdateDetails details, double cellSize) {
     final pos = _getCellPosition(details.localPosition, cellSize);
     if (pos != null && !_selectedPositions.contains(pos)) {
-      final lastPos = _selectedPositions.isNotEmpty ? _selectedPositions.last : null;
-      if (lastPos != null) {
-        // Allow if it's next to the last selected cell (including diagonal)
-        if ((pos.dx - lastPos.dx).abs() <= 1 && (pos.dy - lastPos.dy).abs() <= 1) {
-          setState(() {
-            _selectedPositions.add(pos);
-          });
-        }
-      } else {
-        // First cell
-        setState(() {
-          _selectedPositions.add(pos);
-        });
-      }
+      setState(() {
+        _selectedPositions.add(pos);
+      });
     }
   }
 
@@ -75,7 +64,7 @@ class _LetterGridState extends State<LetterGrid> {
   @override
   Widget build(BuildContext context) {
     final gridSize = widget.grid.length;
-    final cellSize = 28.0; // Small but finger-friendly!
+    final cellSize = 28.0; // Small but big enough for fingers!
 
     return Center(
       child: Container(
