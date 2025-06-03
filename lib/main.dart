@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'theme/app_colors.dart';
+import 'package:flutter/services.dart';
+
+import 'screens/game_screen.dart';
+
 
 void main() {
-  runApp(const WordSearchApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  runApp(const MyApp());
 }
 
-class WordSearchApp extends StatelessWidget {
-  const WordSearchApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +19,11 @@ class WordSearchApp extends StatelessWidget {
       title: 'Word Search Game',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: AppColors.primary,
-        scaffoldBackgroundColor: AppColors.background,
+        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF1a1a2e),
       ),
-      home: const HomeScreen(),
+      home: GameScreen(),
     );
   }
 }

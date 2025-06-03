@@ -1,123 +1,30 @@
+// This is a basic Flutter widget test.
+//
+// To perform an interaction with a widget in your test, use the WidgetTester
+// utility in the flutter_test package. For example, you can send tap and scroll
+// gestures. You can also use WidgetTester to find child widgets in the widget
+// tree, read text, and verify that the values of widget properties are correct.
+
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
-class LetterGrid extends StatefulWidget {
-  final List<List<String>> grid;
-  final Function(String) onWordSelected;
+import 'package:words_search_game/main.dart';
 
-  const LetterGrid({
-    super.key,
-    required this.grid,
-    required this.onWordSelected,
+void main() {
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
+
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter has incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
   });
-
-  @override
-  State<LetterGrid> createState() => _LetterGridState();
-}
-
-class _LetterGridState extends State<LetterGrid> {
-  final List<Offset> _selectedPositions = [];
-
-  void _onPanStart(DragStartDetails details, double cellSize) {
-    final pos = _getCellPosition(details.localPosition, cellSize);
-    if (pos != null) {
-      setState(() {
-        _selectedPositions.clear();
-        _selectedPositions.add(pos);
-      });
-    }
-  }
-
-  void _onPanUpdate(DragUpdateDetails details, double cellSize) {
-    final pos = _getCellPosition(details.localPosition, cellSize);
-    if (pos != null && !_selectedPositions.contains(pos)) {
-      final lastPos = _selectedPositions.isNotEmpty ? _selectedPositions.last : null;
-      if (lastPos != null) {
-        // Allow if it's next to the last selected cell (including diagonal)
-        if ((pos.dx - lastPos.dx).abs() <= 1 && (pos.dy - lastPos.dy).abs() <= 1) {
-          setState(() {
-            _selectedPositions.add(pos);
-          });
-        }
-      } else {
-        // First cell
-        setState(() {
-          _selectedPositions.add(pos);
-        });
-      }
-    }
-  }
-
-  void _onPanEnd(DragEndDetails details) {
-    final word = _getSelectedWord();
-    widget.onWordSelected(word);
-    setState(() {
-      _selectedPositions.clear();
-    });
-  }
-
-  Offset? _getCellPosition(Offset localPos, double cellSize) {
-    final row = localPos.dy ~/ cellSize;
-    final col = localPos.dx ~/ cellSize;
-    if (row >= 0 && row < widget.grid.length && col >= 0 && col < widget.grid.length) {
-      return Offset(row.toDouble(), col.toDouble());
-    }
-    return null;
-  }
-
-  String _getSelectedWord() {
-    String word = '';
-    for (var pos in _selectedPositions) {
-      word += widget.grid[pos.dx.toInt()][pos.dy.toInt()];
-    }
-    return word;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final gridSize = widget.grid.length;
-    final cellSize = 28.0; // Small but finger-friendly!
-
-    return Center(
-      child: Container(
-        width: gridSize * cellSize,
-        height: gridSize * cellSize,
-        color: Colors.transparent,
-        child: GestureDetector(
-          onPanStart: (details) => _onPanStart(details, cellSize),
-          onPanUpdate: (details) => _onPanUpdate(details, cellSize),
-          onPanEnd: _onPanEnd,
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: gridSize,
-            ),
-            itemCount: gridSize * gridSize,
-            itemBuilder: (context, index) {
-              final row = index ~/ gridSize;
-              final col = index % gridSize;
-              final isSelected = _selectedPositions.contains(Offset(row.toDouble(), col.toDouble()));
-
-              return Container(
-                width: cellSize,
-                height: cellSize,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black26, width: 0.5),
-                  color: isSelected ? Colors.yellowAccent : Colors.transparent,
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    widget.grid[row][col],
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
 }
