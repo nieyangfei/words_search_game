@@ -49,7 +49,7 @@ lib/
 │   └── game_provider.dart   # Game state management with ChangeNotifier
 ├── screens/
 │   ├── home_screen.dart     # Main menu with difficulty selection
-│   ├── levels_screen.dart   # Levels screen with starts
+│   ├── levels_screen.dart   # Level selection screen with stars
 │   └── game_screen.dart     # Main game interface
 ├── widgets/
 │   ├── game_grid.dart       # Interactive letter grid component
