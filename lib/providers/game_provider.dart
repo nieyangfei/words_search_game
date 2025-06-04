@@ -13,8 +13,8 @@ class GameProvider extends ChangeNotifier {
   Timer? _gameTimer;
   bool _gameStarted = false;
   bool _gameCompleted = false;
+  bool _isPaused = false;
 
-  // Getters
   GameConfig? get currentConfig => _currentConfig;
   List<List<String>> get grid => _grid;
   List<WordPlacement> get wordPlacements => _wordPlacements;
@@ -23,16 +23,18 @@ class GameProvider extends ChangeNotifier {
   int get timeRemaining => _timeRemaining;
   bool get gameStarted => _gameStarted;
   bool get gameCompleted => _gameCompleted;
+  bool get isPaused => _isPaused;
   int get foundWords => _wordPlacements.where((w) => w.isFound).length;
   int get totalWords => _wordPlacements.length;
 
-  void startNewGame(Difficulty difficulty) {
-    _currentConfig = GameConfig.getConfig(difficulty);
+  void startNewGame(Difficulty difficulty, [int level = 0]) {
+    _currentConfig = GameConfig.getConfig(difficulty, level);
     _generateGrid();
     _score = 0;
     _timeRemaining = _currentConfig!.timeLimit * 60;
     _gameStarted = true;
     _gameCompleted = false;
+    _isPaused = false;
     _startTimer();
     notifyListeners();
   }
@@ -42,12 +44,10 @@ class GameProvider extends ChangeNotifier {
     _grid = List.generate(size, (i) => List.generate(size, (j) => ''));
     _wordPlacements = [];
 
-    // Place words in grid
     for (String word in _currentConfig!.words) {
       _placeWordInGrid(word);
     }
 
-    // Fill empty cells with random letters
     final random = Random();
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -67,26 +67,23 @@ class GameProvider extends ChangeNotifier {
     const maxAttempts = 100;
 
     while (attempts < maxAttempts) {
-      final direction =
-          Direction.values[random.nextInt(Direction.values.length)];
+      final direction = Direction.values[random.nextInt(Direction.values.length)];
       final row = random.nextInt(size);
       final col = random.nextInt(size);
 
       if (_canPlaceWord(word, row, col, direction)) {
         final positions = _getWordPositions(word, row, col, direction);
-
-        // Place the word
         for (int i = 0; i < word.length; i++) {
           final pos = positions[i];
           _grid[pos.row][pos.col] = word[i];
         }
-
         _wordPlacements.add(
           WordPlacement(
             word: word,
             startPosition: Position(row, col),
             direction: direction,
             positions: positions,
+            color: _getRandomColor(),
           ),
         );
         return;
@@ -98,7 +95,6 @@ class GameProvider extends ChangeNotifier {
   bool _canPlaceWord(String word, int row, int col, Direction direction) {
     final positions = _getWordPositions(word, row, col, direction);
 
-    // Check if all positions are valid and empty or match existing letters
     for (int i = 0; i < positions.length; i++) {
       final pos = positions[i];
       if (pos.row < 0 ||
@@ -116,12 +112,7 @@ class GameProvider extends ChangeNotifier {
     return true;
   }
 
-  List<Position> _getWordPositions(
-    String word,
-    int row,
-    int col,
-    Direction direction,
-  ) {
+  List<Position> _getWordPositions(String word, int row, int col, Direction direction) {
     List<Position> positions = [];
 
     for (int i = 0; i < word.length; i++) {
@@ -152,19 +143,14 @@ class GameProvider extends ChangeNotifier {
   }
 
   void selectPosition(Position position) {
-    if (!_gameStarted || _gameCompleted) {
-      return;
-    }
+    if (!_gameStarted || _gameCompleted || _isPaused) return;
 
-    // If this is the first position or the position is adjacent to the last selected position
     if (_selectedPositions.isEmpty) {
       _selectedPositions.add(position);
     } else {
-      // Check if we're continuing a line or starting a new selection
       if (_isValidNextPosition(position)) {
         _selectedPositions.add(position);
       } else {
-        // Start new selection from this position
         _selectedPositions.clear();
         _selectedPositions.add(position);
       }
@@ -172,7 +158,6 @@ class GameProvider extends ChangeNotifier {
 
     notifyListeners();
 
-    // Check if selection forms a word (only if we have at least 2 positions)
     if (_selectedPositions.length >= 2) {
       _checkForWord();
     }
@@ -185,7 +170,6 @@ class GameProvider extends ChangeNotifier {
     int rowDiff = (newPosition.row - lastPosition.row).abs();
     int colDiff = (newPosition.col - lastPosition.col).abs();
 
-    // Check if the new position is adjacent (including diagonally)
     return rowDiff <= 1 && colDiff <= 1 && (rowDiff + colDiff > 0);
   }
 
@@ -201,12 +185,9 @@ class GameProvider extends ChangeNotifier {
       if (!placement.isFound &&
           (placement.word == selectedWord ||
               placement.word == selectedWord.split('').reversed.join())) {
-        // Check if selected positions match word positions (forward or backward)
         if (_positionsMatch(placement.positions, _selectedPositions) ||
             _positionsMatch(
-              placement.positions,
-              _selectedPositions.reversed.toList(),
-            )) {
+                placement.positions, _selectedPositions.reversed.toList())) {
           placement.isFound = true;
           _score += _calculateWordScore(placement.word);
           _selectedPositions.clear();
@@ -226,19 +207,11 @@ class GameProvider extends ChangeNotifier {
     return _selectedPositions.map((pos) => _grid[pos.row][pos.col]).join();
   }
 
-  bool _positionsMatch(
-    List<Position> wordPositions,
-    List<Position> selectedPositions,
-  ) {
-    if (wordPositions.length != selectedPositions.length) {
-      return false;
-    }
+  bool _positionsMatch(List<Position> wordPositions, List<Position> selectedPositions) {
+    if (wordPositions.length != selectedPositions.length) return false;
 
-    // Check if positions match exactly
     for (int i = 0; i < wordPositions.length; i++) {
-      if (wordPositions[i] != selectedPositions[i]) {
-        return false;
-      }
+      if (wordPositions[i] != selectedPositions[i]) return false;
     }
 
     return true;
@@ -265,24 +238,39 @@ class GameProvider extends ChangeNotifier {
   void _completeGame() {
     _gameCompleted = true;
     _gameTimer?.cancel();
-
-    // Bonus points for remaining time
     if (_wordPlacements.every((w) => w.isFound)) {
       _score += _timeRemaining * 2;
     }
-
     notifyListeners();
   }
 
   void pauseGame() {
     _gameTimer?.cancel();
+    _isPaused = true;
     notifyListeners();
   }
 
   void resumeGame() {
     if (_gameStarted && !_gameCompleted && _timeRemaining > 0) {
       _startTimer();
+      _isPaused = false;
+      notifyListeners();
     }
+  }
+
+  Color _getRandomColor() {
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.red,
+      Colors.indigo,
+      Colors.brown,
+      Colors.pink,
+    ];
+    return colors[Random().nextInt(colors.length)];
   }
 
   @override
