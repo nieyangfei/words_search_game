@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/game_models.dart';
-import 'game_screen.dart';
+import '../screens/levels_screen.dart';
+import '../providers/theme_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -8,6 +10,17 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Word Search'),
+        actions: [
+          Consumer<ThemeNotifier>(
+            builder: (context, themeNotifier, _) => IconButton(
+              icon: Icon(themeNotifier.isDark ? Icons.dark_mode : Icons.light_mode),
+              onPressed: () => themeNotifier.toggleTheme(),
+            ),
+          )
+        ],
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -42,9 +55,10 @@ class HomeScreen extends StatelessWidget {
                 Text(
                   'Find hidden words in the grid',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -104,7 +118,7 @@ class _DifficultyCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => GameScreen(difficulty: difficulty),
+              builder: (context) => LevelsScreen(difficulty: difficulty),
             ),
           );
         },
@@ -130,9 +144,10 @@ class _DifficultyCard extends StatelessWidget {
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.7),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -140,7 +155,8 @@ class _DifficultyCard extends StatelessWidget {
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color:
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
               ),
             ],
           ),

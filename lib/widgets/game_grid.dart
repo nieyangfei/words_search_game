@@ -1,120 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/game_provider.dart';
 import '../models/game_models.dart';
+import '../providers/game_provider.dart';
 
-class GameGrid extends StatefulWidget {
+class GameGrid extends StatelessWidget {
   const GameGrid({super.key});
 
   @override
-  State<GameGrid> createState() => _GameGridState();
-}
-
-class _GameGridState extends State<GameGrid> {
-  @override
   Widget build(BuildContext context) {
     return Consumer<GameProvider>(
-      builder: (context, gameProvider, child) {
-        if (gameProvider.currentConfig == null) {
-          return const Center(child: Text('No game started'));
-        }
+      builder: (context, provider, _) {
+        final grid = provider.grid;
+        final size = provider.currentConfig!.gridSize;
 
-        final grid = gameProvider.grid;
-        final size = gameProvider.currentConfig!.gridSize;
-
-        return AspectRatio(
-          aspectRatio: 1.0,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            child: GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: size,
-                childAspectRatio: 1.0,
-                crossAxisSpacing: 2,
-                mainAxisSpacing: 2,
-              ),
-              itemCount: size * size,
-              itemBuilder: (context, index) {
-                final row = index ~/ size;
-                final col = index % size;
-                final position = Position(row, col);
-
-                return GestureDetector(
-                  onTap: () => gameProvider.selectPosition(position),
-                  child: GridCell(letter: grid[row][col], position: position),
-                );
-              },
-            ),
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: size,
           ),
+          itemCount: size * size,
+          itemBuilder: (context, index) {
+            final row = index ~/ size;
+            final col = index % size;
+            final position = Position(row, col);
+            final letter = grid[row][col];
+            final tileColor = _getTileColor(context, position, provider);
+
+            return GestureDetector(
+              onTap: () => provider.selectPosition(position),
+              child: Container(
+                alignment: Alignment.center,
+                margin: const EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  color: tileColor,
+                  border: Border.all(color: Colors.black26, width: 0.5),
+                ),
+                child: Text(
+                  letter.isNotEmpty ? letter : '?',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: _getTextColor(context, tileColor),
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
-}
 
-class GridCell extends StatelessWidget {
-  final String letter;
-  final Position position;
+  Color _getTileColor(BuildContext context, Position pos, GameProvider provider) {
+    // Highlight found word tiles
+    for (final word in provider.wordPlacements) {
+      if (word.isFound && word.positions.contains(pos)) {
+        return word.color;
+      }
+    }
 
-  const GridCell({super.key, required this.letter, required this.position});
+    // Highlight selected tiles
+    if (provider.selectedPositions.contains(pos)) {
+      return Theme.of(context).colorScheme.secondary.withOpacity(0.5);
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<GameProvider>(
-      builder: (context, gameProvider, child) {
-        final isSelected = gameProvider.selectedPositions.contains(position);
-        final isPartOfFoundWord = gameProvider.wordPlacements.any(
-          (w) => w.isFound && w.positions.contains(position),
-        );
+    // Default background (based on theme)
+    final brightness = Theme.of(context).brightness;
+    return brightness == Brightness.dark
+        ? Colors.grey[900]!
+        : Colors.grey[100]!;
+  }
 
-        // Calculate cell size for responsive font sizing
-        final screenWidth = MediaQuery.of(context).size.width;
-        final gridSize = gameProvider.currentConfig?.gridSize ?? 8;
-        final cellSize = (screenWidth - 48) / gridSize;
-
-        Color backgroundColor;
-        Color textColor = Theme.of(context).colorScheme.onSurface;
-
-        if (isPartOfFoundWord) {
-          backgroundColor = Theme.of(
-            context,
-          ).colorScheme.primary.withOpacity(0.3);
-          textColor = Theme.of(context).colorScheme.primary;
-        } else if (isSelected) {
-          backgroundColor = Theme.of(
-            context,
-          ).colorScheme.secondary.withOpacity(0.5);
-        } else {
-          backgroundColor = Theme.of(context).colorScheme.surface;
-        }
-
-        return Container(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-              width: 1,
-            ),
-          ),
-          child: Center(
-            child: Text(
-              letter,
-              style: TextStyle(
-                fontSize:
-                    cellSize > 40
-                        ? 16
-                        : cellSize > 30
-                        ? 14
-                        : 12,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ),
-        );
-      },
-    );
+  Color _getTextColor(BuildContext context, Color background) {
+    return background.computeLuminance() < 0.5 ? Colors.white : Colors.black;
   }
 }
