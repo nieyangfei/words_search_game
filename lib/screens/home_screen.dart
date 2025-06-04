@@ -32,61 +32,63 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.grid_view,
-                  size: 80,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Word Search',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+        child: SingleChildScrollView(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.grid_view,
+                    size: 80,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Find hidden words in the grid',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.7),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Word Search',
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
-                _DifficultyCard(
-                  difficulty: Difficulty.easy,
-                  title: 'Easy',
-                  subtitle: '8x8 Grid • 8 Words • 10 Minutes',
-                  icon: Icons.sentiment_satisfied,
-                  color: Colors.green,
-                ),
-                const SizedBox(height: 16),
-                _DifficultyCard(
-                  difficulty: Difficulty.medium,
-                  title: 'Medium',
-                  subtitle: '12x12 Grid • 10 Words • 15 Minutes',
-                  icon: Icons.sentiment_neutral,
-                  color: Colors.orange,
-                ),
-                const SizedBox(height: 16),
-                _DifficultyCard(
-                  difficulty: Difficulty.hard,
-                  title: 'Hard',
-                  subtitle: '16x16 Grid • 12 Words • 20 Minutes',
-                  icon: Icons.sentiment_very_dissatisfied,
-                  color: Colors.red,
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Find hidden words in the grid',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 48),
+                  _DifficultyCard(
+                    difficulty: Difficulty.easy,
+                    title: 'Easy',
+                    subtitle: '8x8 Grid • 8 Words • 10 Minutes',
+                    icon: Icons.sentiment_satisfied,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(height: 16),
+                  _DifficultyCard(
+                    difficulty: Difficulty.medium,
+                    title: 'Medium',
+                    subtitle: '12x12 Grid • 10 Words • 15 Minutes',
+                    icon: Icons.sentiment_neutral,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(height: 16),
+                  _DifficultyCard(
+                    difficulty: Difficulty.hard,
+                    title: 'Hard',
+                    subtitle: '16x16 Grid • 12 Words • 20 Minutes',
+                    icon: Icons.sentiment_very_dissatisfied,
+                    color: Colors.red,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
