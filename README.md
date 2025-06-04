@@ -45,9 +45,11 @@ lib/
 ├── models/
 │   └── game_models.dart     # Data models (Position, WordPlacement, GameConfig)
 ├── providers/
+│   ├── theme_provider.dart  # App thene management with ChangeNotifier
 │   └── game_provider.dart   # Game state management with ChangeNotifier
 ├── screens/
 │   ├── home_screen.dart     # Main menu with difficulty selection
+│   ├── levels_screen.dart   # Levels screen with starts
 │   └── game_screen.dart     # Main game interface
 ├── widgets/
 │   ├── game_grid.dart       # Interactive letter grid component
